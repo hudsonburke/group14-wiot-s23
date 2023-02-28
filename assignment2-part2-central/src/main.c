@@ -66,7 +66,7 @@ static uint8_t read_func(struct bt_conn *conn, uint8_t err,
 					   (((uint32_t) buf[3]) <<  0);
 
 		// TODO: if the value read is one, turn on corresponding LED
-		gpio_pin_set_dt(leds[params->by_uuid.start_handle], val); // TODO: Figure out how to determine which LED to set
+		gpio_pin_set_dt(leds[params->by_uuid.start_handle - 1], val); // TODO: Figure out how to determine which LED to set
 		printk("Read: 0x%x\n", val);
 	}
 
@@ -99,7 +99,10 @@ static uint8_t discover_func(struct bt_conn *conn,
 			printk("Discover failed (err %d)\n", err);
 		}
 	}
-	else if (bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(LAB2_SERVICE_CHARACTERISTIC_UUID)) == 0) {
+	else if (bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(BUTTON1_SERVICE_CHARACTERISTIC_UUID)) == 0 ||
+			bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(BUTTON2_SERVICE_CHARACTERISTIC_UUID)) == 0  ||
+			bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(BUTTON3_SERVICE_CHARACTERISTIC_UUID)) == 0 ||
+			bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_16(BUTTON4_SERVICE_CHARACTERISTIC_UUID)) == 0 ) {
 		// printk("Found characteristic\n");
 
 		read_params.func = read_func;
@@ -135,7 +138,6 @@ static void connected(struct bt_conn *conn, uint8_t conn_err)
 
 	printk("Connected: %s\n", addr);
 
-	// TODO: need to look for all 4 services
 	if (conn == default_conn) {
 		discover_params.uuid = search_service_uuid;
 		discover_params.func = discover_func;
