@@ -15,7 +15,7 @@
 #include <bluetooth/gatt.h>
 
 // from button project
-// #include <device.h>
+#include <device.h>
 #include <drivers/gpio.h>
 
 
@@ -37,30 +37,30 @@ static struct gpio_callback button3_cb_data;
 static struct gpio_callback button4_cb_data;
 
 // We added these; ints because gpio_pin_get_dt returns int
-int button1val;
-int button2val;
-int button3val;
-int button4val;
+uint32_t button1val;
+uint32_t button2val;
+uint32_t button3val;
+uint32_t button4val;
 // -------------
 
 void button1_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-	button1val = gpio_pin_get_dt(&button1);
+	button1val = (uint32_t) gpio_pin_get_dt(&button1);
 }
 
 void button2_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-	button2val = gpio_pin_get_dt(&button2);
+	button2val = (uint32_t) gpio_pin_get_dt(&button2);
 }
 
 void button3_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-	button3val = gpio_pin_get_dt(&button3);
+	button3val = (uint32_t) gpio_pin_get_dt(&button3);
 }
 
 void button4_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-	button4val = gpio_pin_get_dt(&button4);
+	button4val = (uint32_t) gpio_pin_get_dt(&button4);
 }
 
 
@@ -96,10 +96,6 @@ void init_button(const struct gpio_dt_spec* button,
 // -------------
 
 static ssize_t characteristic_read(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset);
-
-// Global value that saves state for the characteristic.
-uint32_t characteristic_value = 0x7; // not needed anymore
-
 
 // Set up the advertisement data.
 #define DEVICE_NAME "Peripheral_14"
@@ -137,10 +133,14 @@ static ssize_t characteristic_read(struct bt_conn *conn,
 {
 	// The `user_data` corresponds to the pointer provided as the last "argument"
 	// to the `BT_GATT_CHARACTERISTIC` macro.
-	uint32_t *value = (uint32_t*) attr->user_data;
+	int *value = (int*) attr->user_data; // this reassignment may be unnecessary
 
 	// Need to encode data into a buffer to send to client.
 	uint8_t out_buffer[4] = {0};
+
+	// for (int i = 0; i < 4; i++){
+	// 	out_buffer[i] = (uint8_t) (*value >> (8*(sizeof(int) -(i+1)))) & 0xFF;
+	// }
 
 	out_buffer[0]=(*value >> 24) & 0xFF; 
 	out_buffer[1]=(*value >> 16) & 0xFF;

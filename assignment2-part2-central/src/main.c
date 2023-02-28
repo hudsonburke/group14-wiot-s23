@@ -4,6 +4,12 @@
 #include <zephyr.h>
 #include <sys/printk.h>
 
+// From "blink" example project
+// #include <device.h>
+// #include <devicetree.h>
+#include <drivers/gpio.h>
+// 
+
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/conn.h>
@@ -17,6 +23,21 @@
 #define BUTTON3_SERVICE_CHARACTERISTIC_UUID 0x0003
 #define BUTTON4_SERVICE_CHARACTERISTIC_UUID 0x0004
 
+// LED info - based on "blinky" example project
+#define NUM_LEDS 4
+
+#define LED0_NODE DT_ALIAS(led0) 
+#define LED1_NODE DT_ALIAS(led1)
+#define LED2_NODE DT_ALIAS(led2)
+#define LED3_NODE DT_ALIAS(led3)
+
+static const struct gpio_dt_spec LED0 = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+static const struct gpio_dt_spec LED1 = GPIO_DT_SPEC_GET(LED1_NODE, gpios);
+static const struct gpio_dt_spec LED2 = GPIO_DT_SPEC_GET(LED2_NODE, gpios);
+static const struct gpio_dt_spec LED3 = GPIO_DT_SPEC_GET(LED3_NODE, gpios);
+
+static const struct gpio_dt_spec* leds[NUM_LEDS] = {&LED0, &LED1, &LED2, &LED3};
+// 
 
 static void start_scan(void);
 
@@ -45,6 +66,9 @@ static uint8_t read_func(struct bt_conn *conn, uint8_t err,
 					   (((uint32_t) buf[3]) <<  0);
 
 		// TODO: if the value read is one, turn on corresponding LED
+		if (val){
+			
+		}
 		printk("Read: 0x%x\n", val);
 	}
 
@@ -249,6 +273,17 @@ static void bt_ready(int err)
 void main(void)
 {
 	int err;
+	 
+	for (int i = 0; i < NUM_LEDS; i++){
+		// based on "blinky" example project
+		if (!device_is_ready(leds[i]->port)){
+			return;
+		}
+		err = gpio_pin_configure_dt(leds[i], GPIO_OUTPUT_ACTIVE);
+		if (err < 0) {
+			return;
+		}
+	}
 
 	err = bt_enable(bt_ready);
 
