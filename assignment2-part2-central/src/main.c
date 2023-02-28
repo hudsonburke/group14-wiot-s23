@@ -66,9 +66,7 @@ static uint8_t read_func(struct bt_conn *conn, uint8_t err,
 					   (((uint32_t) buf[3]) <<  0);
 
 		// TODO: if the value read is one, turn on corresponding LED
-		if (val){
-			
-		}
+		gpio_pin_set_dt(leds[params->by_uuid.start_handle], val); // TODO: Figure out how to determine which LED to set
 		printk("Read: 0x%x\n", val);
 	}
 
@@ -90,7 +88,7 @@ static uint8_t discover_func(struct bt_conn *conn,
 	// printk("[ATTRIBUTE] handle %u\n", attr->handle);
 
 	if (bt_uuid_cmp(discover_params.uuid, BT_UUID_DECLARE_128(ASSIGNMENT2_SERVICE_UUID)) == 0) {
-		// printk("Found service\n");
+		printk("Found service\n");
 
 		discover_params.uuid = search_characteristic_uuid;
 		discover_params.start_handle = attr->handle + 1;
@@ -196,6 +194,7 @@ static bool ad_found(struct bt_data *data, void *user_data)
 
 		bt_uuid_create(&uuid, data->data, 16);
 		if (bt_uuid_cmp(&uuid, BT_UUID_DECLARE_128(ASSIGNMENT2_SERVICE_UUID)) == 0) {
+			// if this is the advertisement we want indicated by the UUID
 			printk("Found matching advertisement\n");
 
 			err = bt_le_scan_stop();
@@ -205,6 +204,7 @@ static bool ad_found(struct bt_data *data, void *user_data)
 			}
 
 			param = BT_LE_CONN_PARAM_DEFAULT;
+			// here's where we do the actual connecting
 			err = bt_conn_le_create(addr, BT_CONN_LE_CREATE_CONN, param, &default_conn);
 			if (err) {
 				printk("Create conn failed (err %d)\n", err);
