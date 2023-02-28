@@ -133,16 +133,12 @@ static ssize_t characteristic_read(struct bt_conn *conn,
 {
 	// The `user_data` corresponds to the pointer provided as the last "argument"
 	// to the `BT_GATT_CHARACTERISTIC` macro.
-	int *value = (int*) attr->user_data; // this reassignment may be unnecessary
+	uint32_t *value = attr->user_data; // this reassignment may be unnecessary
 
 	// Need to encode data into a buffer to send to client.
 	uint8_t out_buffer[4] = {0};
 
-	// for (int i = 0; i < 4; i++){
-	// 	out_buffer[i] = (uint8_t) (*value >> (8*(sizeof(int) -(i+1)))) & 0xFF;
-	// }
-
-	out_buffer[0]=(*value >> 24) & 0xFF; 
+	out_buffer[0]=(*value >> 24) & 0xFF;
 	out_buffer[1]=(*value >> 16) & 0xFF;
 	out_buffer[2]=(*value >> 8)  & 0xFF;
 	out_buffer[3]=(*value >> 0)  & 0xFF;
